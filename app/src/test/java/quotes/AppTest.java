@@ -4,11 +4,19 @@
 package quotes;
 
 import org.junit.jupiter.api.Test;
+
+import java.io.FileReader;
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AppTest {
     @Test void appHasAGreeting() {
         App classUnderTest = new App();
         assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+    }
+    @Test
+    public void testGetQuoteFromFile() throws IOException {
+        assertNotNull(App.getQuoteQuotesFile("C:\\Users\\STUDENT\\course-401\\quotes\\app\\src\\test\\resources\\quotesFile-Copy.json") , "it should return a quote");
     }
 }

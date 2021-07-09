@@ -4,6 +4,7 @@
 package quotes;
 
 import java.io.*;
+import com.google.gson.Gson;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.file.*;
@@ -15,8 +16,7 @@ public class App {
         return "Hello World!";
     }
 
-    public static void main(String[] args) throws IOException {
-
+    public static void main(String[] args) throws Exception {
         Gson gsonObj = new Gson();
         URL url = new URL("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
         HttpURLConnection req = (HttpURLConnection) url.openConnection();
@@ -26,41 +26,56 @@ public class App {
         int resCode ;
         try {
             resCode = req.getResponseCode() ;
-        } catch (Exception IOException){
+        } catch (Exception e){
             resCode = -1 ;
         }
 
-        FileReader fileReader = new FileReader("app/src/main/resources/quotesFile.json");
-        BufferedReader data = new BufferedReader(fileReader);
-//        String fileData = data.readLine() ;
-//        fileReader.close();
-//        System.out.println("file data " + fileData);
         if(resCode==HttpURLConnection.HTTP_OK) {
-            System.out.println(req);
             InputStreamReader reader = new InputStreamReader(req.getInputStream());
             BufferedReader quote = new BufferedReader(reader);
             ApiQuote reqQuote = gsonObj.fromJson(quote.readLine(), ApiQuote.class);
             quote.close();
-            FileWriter fileWriter = new FileWriter("app/src/main/resources/quotesFile.json" , true);
-            BufferedWriter writer = new BufferedWriter(fileWriter);
-//            System.out.println("file data " + fileData);
-//            writer.newLine();
-            writer.write("hello");
-//            System.out.println(data.readLine());
-            writer.close();
-
+            insertDataInFile(reqQuote.getQuoteAuthor() , reqQuote.getQuoteText());
             System.out.println("The author name : "+reqQuote.getQuoteAuthor());
             System.out.println("The quote : "+reqQuote.getQuoteText());
         }else {
-//            System.out.println("file data "+fileData);
-//            Quote[] quotesData =  gsonObj.fromJson(fileData , Quote[].class);
-//            fileReader.close();
-//            int radnomQuote = (int)(Math.random()*(quotesData.length-1));
-//            System.out.println("Name Of Author: "+quotesData[radnomQuote].getAuthor());
-//            System.out.println("The Quote : " + quotesData[radnomQuote].getText());
-//            System.out.println("Quote number : " + radnomQuote);
+            System.out.println(getQuoteQuotesFile("app/src/main/resources/quotesFile.json"));
         }
 
+
+    }
+
+    public static String getQuoteQuotesFile(String quotesFile) throws IOException{
+        Gson gson = new Gson();
+        FileReader reader = new FileReader(quotesFile);
+        BufferedReader br =new BufferedReader(reader);
+
+        Quote[] testCase = gson.fromJson(br, Quote[].class);
+        int radnomQuote = (int)(Math.random()*(testCase.length-1));
+        return "Name Of Author: "+testCase[radnomQuote].getAuthor() + "\nThe Quote : " + testCase[radnomQuote].getText() ;
+    }
+
+    public static void insertDataInFile(String author , String text) throws Exception{
+        FileReader file = new FileReader("app/src/main/resources/quotesFile.json");
+        BufferedReader fileData = new BufferedReader(file);
+        String newData = "";
+        String s = "";
+        while ((s=fileData.readLine())!=null){
+            newData+=s+"\n" ;
+        }
+        file.close();
+        fileData.close();
+        String newStr = newData.substring(0 , newData.length()-3);
+        String addedQuote = String.format(",\n{\n\"author\":\"%s\",\n\"text\":\"%s\"\n}\n]" , author , text);
+        newStr+=addedQuote ;
+        FileWriter fileWriter = new FileWriter("app/src/main/resources/quotesFile.json");
+        BufferedWriter newFile = new BufferedWriter(fileWriter);
+        newFile.write(newStr);
+        newFile.close();
     }
 }
+
+
+
+
 

@@ -4,7 +4,10 @@
 package quotes;
 
 import org.checkerframework.checker.units.qual.A;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import quotes.services.FileOperations;
+import quotes.services.HttpOperations;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,8 +21,25 @@ class AppTest {
         assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
     }
 
+    @DisplayName("test Http Operations class")
     @Test
-    public void testGetQuoteFromFile() throws IOException {
-        assertNotNull(App.getQuoteQuotesFile("C:\\Users\\STUDENT\\course-401\\quotes\\app\\src\\test\\resources\\quotesFile-Copy.json"), "it should return a quote");
+    public void testHttpOperations() throws IOException{
+        HttpOperations httpOperations = new HttpOperations("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en" , "GET");
+        String status = httpOperations.startConnection() ;
+        assertEquals("success" , status , "startConnection method should return success if the request was successfully made");
+        System.out.println(httpOperations.getData());
+        assertNotNull(httpOperations.getData() , "the data should not be null");
+        assertTrue(httpOperations.getData().contains("quoteAuthor") , "the data should contain quoteAuthor ");
+        assertTrue(httpOperations.getData().contains("quoteText") , "the data should contain quoteText ");
+    }
+
+    @DisplayName("test File Operations class")
+    @Test
+    public void testFileOperations() throws IOException{
+        FileOperations fileOperations = new FileOperations();
+        String quote = fileOperations.getQuote("C:\\Users\\STUDENT\\course-401\\quotes\\app\\src\\main\\resources\\quotesFile.json");
+        assertNotNull(quote , "the data should not be null");
+        assertTrue(quote.contains("Name Of Author:") , "the quote should contain Name Of Author");
+        assertTrue((quote.contains("The Quote :")) , "the quote should contain The Quote :");
     }
 }
